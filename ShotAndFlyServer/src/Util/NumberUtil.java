@@ -21,10 +21,8 @@ public class NumberUtil {
         int second = new Random().nextInt(10);
         int third = new Random().nextInt(10);
 
-        System.out.println(first);
-        System.out.println(second);
-        System.out.println(third);
-
+        if(first == 0)
+            first++;
         return (first*100)+(second*10)+third;
     }
     

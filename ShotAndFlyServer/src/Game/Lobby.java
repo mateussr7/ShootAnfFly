@@ -1,28 +1,47 @@
 package Game;
 
+import Communication.CommunicationHandler;
 import Entities.Player;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import Enum.*;
 
 public class Lobby {
 
-    private List<Player> lobby = new ArrayList<>();
+    private List<Player> players = new ArrayList<>();
+    private static Lobby instance = null;
 
-    public int getPlayersAmount(){
-        return lobby.size();
+    private Lobby() {
     }
 
-    public Map<String, Player> getDuoToPlay(){
-        Map<String, Player> duo = new HashMap<String, Player>();
-        duo.put("PLAYER_ONE", lobby.remove(0));
-        duo.put("PLAYER_TWO", lobby.remove(0));
-        return duo;
+    public static Lobby getInstance() {
+        if (instance == null) {
+            instance = new Lobby();
+        }
+
+        return instance;
     }
 
-    public void insertPlayerInLobby(Player player){
-        lobby.add(player);
+    public void addPlayer(Player player) throws IOException {
+        players.add(player);
+        if (players.size() == 2) {
+            List<Player> playersToGame = new ArrayList<>(players);
+
+            for(Player p : playersToGame){
+                CommunicationHandler.getCommunication(p.getConnectionManager()).sendMessage(
+                        "Jogo encontrado",
+                        MessageType.MATCH_FOUND
+                );
+            }
+
+            GameInstance gameInstance = new GameInstance(playersToGame, GameMode.MULTIPLAYER);
+            Thread thread = new Thread(gameInstance);
+            thread.start();
+
+            players = new ArrayList<>();
+        }
     }
 }

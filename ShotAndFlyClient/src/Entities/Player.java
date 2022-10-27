@@ -17,7 +17,7 @@ public class Player {
 
             @Override
             public Player fromTransferString(String transferString) {
-                return null;
+                return new Player(transferString);
             }
         };
     }

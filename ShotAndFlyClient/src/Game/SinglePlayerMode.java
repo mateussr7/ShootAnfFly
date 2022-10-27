@@ -8,7 +8,6 @@ import Entities.Guess;
 import Entities.Player;
 
 import java.io.IOException;
-import java.util.List;
 
 import Enum.MessageType;
 
@@ -32,28 +31,31 @@ public class SinglePlayerMode implements Runnable{
     }
 
     public void singlePLayerGame() throws IOException {
-        while(true){
-            ServerAnswer answer = CommunicationHandler.getCommunication(connectionHandler).getMessage();
+        ServerAnswer initGameAnswer = CommunicationHandler.getCommunication(connectionHandler).getMessage();
+        if(initGameAnswer.getMessageType().equals(MessageType.INIT_GAME)){
+            while(true){
+                ServerAnswer answer = CommunicationHandler.getCommunication(connectionHandler).getMessage();
 
-            if(answer.getMessageType().equals(MessageType.YOUR_TURN)){
-                Guess guess = GuessBuilder.buildGuess();
-                CommunicationHandler.getCommunication(connectionHandler).sendMessage(
-                        Guess.networkTransferable(),
-                        guess,
-                        MessageType.GUESS
-                );
+                if(answer.getMessageType().equals(MessageType.YOUR_TURN)){
+                    Guess guess = GuessBuilder.buildGuess();
 
-                ServerAnswer guessResult = CommunicationHandler.getCommunication(connectionHandler).getMessage(
-                        ServerAnswer.networkTransferable()
-                );
+                    CommunicationHandler.getCommunication(connectionHandler).sendMessage(
+                            guess.getValue().toString(),
+                            MessageType.GUESS
+                    );
 
-                if(guessResult.getMessageType().equals(MessageType.GAME_WIN)){
-                    System.out.println("Parabéns, voce acertou!");
-                    break;
-                }else {
-                    System.out.println("Infelizmente você nao acertou");
+                    ServerAnswer guessResult = CommunicationHandler.getCommunication(connectionHandler).getMessage();
+
+                    if(guessResult.getMessageType().equals(MessageType.YOU_WIN)){
+                        System.out.println("Parabéns, voce acertou!");
+                        break;
+                    }else if(guessResult.getMessageType().equals(MessageType.RESULT)){
+                        String message = guessResult.getValue().toString();
+                        System.out.println(message);
+                        System.out.println("Tente novamente");
+                    }
+
                 }
-
             }
         }
     }

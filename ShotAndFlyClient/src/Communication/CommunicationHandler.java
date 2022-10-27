@@ -5,6 +5,7 @@ import Entities.NetworkTransferable;
 import Enum.MessageType;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 public class CommunicationHandler {
@@ -21,26 +22,19 @@ public class CommunicationHandler {
 
     public <T> void sendMessage(NetworkTransferable<T> handler, T value, MessageType messageType) throws IOException {
         String message = handler.toTransferString(value);
-        StringBuilder builder = new StringBuilder();
-        builder.append(messageType.toString() + "&" + message);
-        connectionHandler.getDataOutputStream().writeUTF(builder.toString());
+        String builder = messageType.toString() + "&" + message;
+        connectionHandler.getDataOutputStream().writeUTF(builder);
     }
 
     public void sendMessage(String message, MessageType messageType) throws IOException {
-        StringBuilder builder = new StringBuilder();
-        builder.append(messageType.toString() + "&" + message);
-        connectionHandler.getDataOutputStream().writeUTF(builder.toString());
-    }
-
-    public ServerAnswer getMessage(NetworkTransferable<?> networkTransferable) throws IOException {
-        String message = connectionHandler.getDataInputStream().readUTF();
-        return (ServerAnswer) networkTransferable.fromTransferString(message);
+        String formatted = String.format("%s&%s", messageType.toString(), message);
+        connectionHandler.getDataOutputStream().writeUTF(formatted);
     }
 
     public ServerAnswer getMessage() throws IOException {
         String message = connectionHandler.getDataInputStream().readUTF();
-        String[] splitedMessage = message.split("&");
+        String[] splitMessage = message.split("&");
 
-        return new ServerAnswer(splitedMessage[1], MessageType.valueOf(splitedMessage[0]));
+        return new ServerAnswer(splitMessage[1], MessageType.valueOf(splitMessage[0]));
     }
 }

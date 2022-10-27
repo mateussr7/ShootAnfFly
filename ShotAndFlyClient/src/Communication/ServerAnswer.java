@@ -4,8 +4,8 @@ import Entities.NetworkTransferable;
 import Enum.MessageType;
 
 public class ServerAnswer {
-    Object value;
-    MessageType messageType;
+    private Object value;
+    private MessageType messageType;
 
     public ServerAnswer(Object value, MessageType messageType){
         this.value = value;
@@ -24,9 +24,7 @@ public class ServerAnswer {
         return new NetworkTransferable<>() {
             @Override
             public String toTransferString(ServerAnswer value) {
-                StringBuilder builder = new StringBuilder();
-                builder.append(value.messageType + "&" + value.value);
-                return builder.toString();
+                return value.getMessageType() + "&" + value.getValue().toString();
             }
 
             @Override

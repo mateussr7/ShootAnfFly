@@ -4,7 +4,6 @@ import Client.ConnectionHandler;
 import Communication.CommunicationHandler;
 import Communication.ServerAnswer;
 import Connection.PlayerManager;
-import Entities.NetworkTransferable;
 import Entities.Player;
 
 import java.io.IOException;
@@ -31,9 +30,7 @@ public class GameManager {
                     MessageType.PLAYER_REGISTER
             );
 
-            serverAnswer = CommunicationHandler.getCommunication(connectionHandler).getMessage(
-                    ServerAnswer.networkTransferable()
-            );
+            serverAnswer = CommunicationHandler.getCommunication(connectionHandler).getMessage();
 
             if(!serverAnswer.getMessageType().equals(MessageType.PLAYER_REGISTER_FAILED_NAME_ALREADY_USED))
                 break;
@@ -47,18 +44,22 @@ public class GameManager {
 
     public void choiceGameMode(Player player) throws IOException{
         while(true){
-            GameMode mode = getGameMode();
-            CommunicationHandler.getCommunication(connectionHandler).sendMessage(
-                    mode.toString(),
-                    MessageType.CHOICE_GAME_MODE
-            );
 
-            ServerAnswer answer = CommunicationHandler.getCommunication(connectionHandler).getMessage(
-                    ServerAnswer.networkTransferable()
-            );
-            if(answer.getMessageType().equals(MessageType.CHOICE_GAME_MODE_SUCCESS)){
-                initGame(mode, player);
-                break;
+            ServerAnswer choiceGameMode = CommunicationHandler.getCommunication(connectionHandler).getMessage();
+
+            if(choiceGameMode.getMessageType().equals(MessageType.READY_CHOICE_GAME_MODE)){
+                GameMode mode = getGameMode();
+                CommunicationHandler.getCommunication(connectionHandler).sendMessage(
+                        mode.toString(),
+                        MessageType.CHOICE_GAME_MODE
+                );
+
+                ServerAnswer answer = CommunicationHandler.getCommunication(connectionHandler).getMessage();
+
+                if(answer.getMessageType().equals(MessageType.CHOICE_GAME_MODE_SUCCESS)){
+                    initGame(mode, player);
+                    break;
+                }
             }
         }
     }
@@ -77,11 +78,24 @@ public class GameManager {
         return GameMode.SINGLE_PLAYER;
     }
 
-    public void initGame(GameMode gameMode, Player player){
+    public void initGame(GameMode gameMode, Player player) throws IOException{
         if(gameMode.equals(GameMode.SINGLE_PLAYER)){
             SinglePlayerMode singlePlayerMode = new SinglePlayerMode(player, connectionHandler);
             Thread thread = new Thread(singlePlayerMode);
             thread.start();
+        }else if(gameMode.equals(GameMode.MULTIPLAYER)){
+            ServerAnswer lobby = CommunicationHandler.getCommunication(connectionHandler).getMessage();
+            if(lobby.getMessageType().equals(MessageType.ON_LOBBY)){
+                System.out.println("Você foi adicionado a fila, e logo encontraremos alguem para te desafiar.");
+
+                ServerAnswer matchFound = CommunicationHandler.getCommunication(connectionHandler).getMessage();
+
+                if(matchFound.getMessageType().equals(MessageType.MATCH_FOUND)){
+                    MultiPlayerMode multiPlayerMode = new MultiPlayerMode(player, connectionHandler);
+                    Thread thread = new Thread(multiPlayerMode);
+                    thread.start();
+                }
+            }
         }
     }
 }

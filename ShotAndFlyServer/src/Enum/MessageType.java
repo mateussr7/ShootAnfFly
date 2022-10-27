@@ -1,0 +1,19 @@
+package Enum;
+
+public enum MessageType {
+    PLAYER_REGISTER,
+    PLAYER_REGISTER_SUCCESS,
+    END_GAME,
+    CHOICE_GAME_MODE,
+    READY_CHOICE_GAME_MODE,
+    CHOICE_GAME_MODE_SUCCESS,
+    YOUR_TURN,
+    GUESS,
+    YOU_WIN,
+    INIT_GAME,
+    OPPONENT_TURN,
+    OPPONENT_WIN,
+    RESULT,
+    ON_LOBBY,
+    MATCH_FOUND
+}
